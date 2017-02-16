@@ -39,6 +39,33 @@ function verify (mod) {
     return false
   }
 
+  function validateEngines (engines) {
+    var thisEngine = (process.release || {name: 'node'}).name
+
+    return Object.keys(engines).reduce(function (state, name) {
+      var wanted = engines[name]
+
+      if (name === thisEngine) {
+        if (!semver.satisfies(process.version, wanted)) {
+          console.error(ERROR, util.format(
+            'engine %s is currently %s but needs to be %s',
+            chalk.cyan(name),
+            chalk.red(process.version),
+            chalk.green(wanted)
+          ))
+          return false
+        }
+      }
+
+      return state
+    }, true)
+  }
+
+  if (!validateEngines(pkg.engines || {})) {
+    console.error(HINT, 'Please update to a supported version.')
+    return false
+  }
+
   function validateDeps (deps, type) {
     return Object.keys(deps).reduce(function (state, name) {
       var wanted = deps[name]
